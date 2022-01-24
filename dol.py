@@ -62,4 +62,5 @@ class Dol(init=False):
 
     @staticmethod
     def open_file(path: str) -> "Dol":
+        """Open DOL file by path"""
         return Dol(InputStream.open_file(path))
