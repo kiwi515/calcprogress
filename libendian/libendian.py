@@ -58,6 +58,9 @@ class InputStream(init=False):
         self.pos += size
         return data
 
+    def get_int8(self) -> int:
+        return self.read(1)
+
     def get_int16(self) -> int:
         return to_endian_16(self.read(2), self.endian)
 
