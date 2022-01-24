@@ -59,3 +59,7 @@ class Dol(init=False):
         # Construct section objects (7-11)
         for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_DATA_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.DATA, data[i]))
+
+    @staticmethod
+    def open_file(path: str) -> "Dol":
+        return Dol(InputStream.open_file(path))
