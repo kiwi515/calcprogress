@@ -66,3 +66,10 @@ class InputStream(init=False):
 
     def get_int32(self) -> int:
         return to_endian_32(self.read(4), self.endian)
+
+    def get_string(self) -> str:
+        string = ""
+        c = self.get_int8()
+        while c != 0x00:
+            string += c
+            c = self.get_int8()
