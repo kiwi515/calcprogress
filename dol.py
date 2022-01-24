@@ -56,9 +56,15 @@ class Dol(init=False):
 
         # Construct section objects (0-7)
         for i in range(DOL_MAX_CODE_SECTIONS):
+            # Check for unused section
+            if (offsets[i] == 0 or addresses[i] == 0 or sizes[i] == 0):
+                continue
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.CODE, data[i]))
         # Construct section objects (7-11)
         for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_DATA_SECTIONS):
+            # Check for unused section
+            if (offsets[i] == 0 or addresses[i] == 0 or sizes[i] == 0):
+                continue
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.DATA, data[i]))
         # Construct BSS section
         self.bss = Section(-1, bss_addr, bss_size, SectionType.BSS, bytes(bss_size))
