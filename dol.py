@@ -9,8 +9,9 @@ DOL_MAX_DATA_SECTIONS = 11
 
 class SectionType(Enum):
     """Possible types of DOL sections"""
-    CODE = 0,
+    CODE = 0
     DATA = 1
+    BSS = 2
 
 @dataclass
 class Section:
@@ -59,6 +60,8 @@ class Dol(init=False):
         # Construct section objects (7-11)
         for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_DATA_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.DATA, data[i]))
+        # Construct BSS section
+        self.bss = Section(-1, bss_addr, bss_size, SectionType.BSS, bytes(bss_size))
 
     @staticmethod
     def open_file(path: str) -> "Dol":
