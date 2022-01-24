@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import IntEnum
-from multiprocessing.spawn import is_forking
 from sys import byteorder
 
 class Endianness(IntEnum):
