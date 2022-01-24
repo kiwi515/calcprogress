@@ -3,13 +3,14 @@ from enum import IntEnum
 from sys import byteorder
 
 class Endianness(IntEnum):
-    LITTLE = 0,
-    BIG = 1,
+    LITTLE = 0
+    BIG = 1
+
     MAX = 2
 
 def is_big_endian() -> bool:
     """Check client endianness"""
-    return True if byteorder == 'big' else False
+    return byteorder == 'big'
 
 def to_endian_16(data: bytes, endian: int) -> int:
     """Byteswap data to specified format (16-bit)"""

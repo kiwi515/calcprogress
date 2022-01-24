@@ -1,5 +1,12 @@
 from dataclasses import dataclass
 from endian import to_endian_16, to_endian_32
+from enum import IntEnum
+
+class SeekPos(IntEnum):
+    BEGIN = 0
+    CURRENT = 1
+
+    MAX = 2
 
 @dataclass
 class InputStream(init=False):
@@ -24,12 +31,23 @@ class InputStream(init=False):
         with open(path, "rb") as f:
             return InputStream(f.read(), _endian)
     
+    def is_empty(self) -> bool:
+        return self.pos < len(self.data)
+
     def read(self, size: int) -> bytearray:
         """Read bytes from the stream."""
         assert self.pos + size < len(self.data)
         data = self.data[self.pos : self.pos + size]
         self.pos += size
         return data
+
+    def seek(self, ofs: int, seekpos: int):
+        """Seek the stream position."""
+        assert seekpos < SeekPos.MAX
+        if (seekpos == SeekPos.BEGIN):
+            self.pos = 0 + ofs
+        elif (seekpos == SeekPos.CURRENT):
+            self.pos = self.pos + ofs
 
     def get_int8(self) -> int:
         """Read a 8-bit integer from the stream."""
