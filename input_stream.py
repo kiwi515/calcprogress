@@ -35,7 +35,7 @@ class InputStream():
 
     def read(self, size: int) -> bytearray:
         """Read bytes from the stream."""
-        assert self.pos + size < len(self.data)
+        assert self.pos + size <= len(self.data)
         data = self.data[self.pos : self.pos + size]
         self.pos += size
         return data
