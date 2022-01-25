@@ -56,6 +56,7 @@ class Dol():
             stream.seek(offsets[i], SeekPos.BEGIN)
             data.append(stream.read(sizes[i]))
 
+        self.sections = []
         # Construct section objects (0-7)
         for i in range(DOL_MAX_CODE_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.CODE, data[i]))

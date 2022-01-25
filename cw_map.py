@@ -6,7 +6,7 @@ r"(?P<SectOfs>\w{8})\s+"\
 r"(?P<Size>\w{6})\s+"\
 r"(?P<VirtOfs>\w{8})\s+"\
 r"(?P<FileOfs>\w{8})\s+"\
-r"(\w{1,2})\s+"\
+r"(\w{1,2})?\s+"\
 r"(?P<Symbol>[0-9A-Za-z_<>$@.*\\]*)"\
 r"(\s+\(entry of.*\)\s+)?\s*"\
 r"(?P<Object>\S*)"
@@ -14,7 +14,7 @@ SYMBOL_OLD_REGEX = r"^\s*"\
 r"(?P<SectOfs>\w{8})\s+"\
 r"(?P<Size>\w{6})\s+"\
 r"(?P<VirtOfs>\w{8})\s+"\
-r"(\w{1,2})\s+"\
+r"(\w{1,2})?\s+"\
 r"(?P<Symbol>[0-9A-Za-z_<>$@.*\\]*)"\
 r"(\s+\(entry of.*\)\s+)?\s*"\
 r"(?P<Object>\S*)"
@@ -67,5 +67,8 @@ class Map():
         with open(path, "r") as f:
             map_data = f.readlines()
         for line in map_data:
-            symbols.append(Symbol.parse(line))
+            symbol = Symbol.parse(line)
+            if (symbol != None):
+                symbols.append(symbol)
+                print(symbol)
         return Map(symbols)
