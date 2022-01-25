@@ -70,5 +70,4 @@ class Map():
             symbol = Symbol.parse(line)
             if (symbol != None):
                 symbols.append(symbol)
-                print(symbol)
         return Map(symbols)
