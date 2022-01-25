@@ -1,0 +1,3 @@
+*.dol
+*.map
+__pycache__/

@@ -5,11 +5,10 @@ from enum import IntEnum
 class SeekPos(IntEnum):
     BEGIN = 0
     CURRENT = 1
-
     MAX = 2
 
 @dataclass
-class InputStream(init=False):
+class InputStream():
     """Input file stream with configurable endianness (byteorder)."""
     endian: int
     pos: int

@@ -57,7 +57,7 @@ class Symbol:
 
 
 @dataclass
-class Map(init=False):
+class Map():
     symbols: list[Symbol]
 
     @staticmethod

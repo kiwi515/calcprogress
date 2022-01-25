@@ -23,14 +23,14 @@ class Section:
     data: bytes
 
 @dataclass
-class Dol(init=False):
+class Dol():
     """Dolphin executable"""
     sections: list[Section]
     bss: Section
 
     def __init__(self, stream: InputStream) -> "Dol":
         # DOL data is in big endian
-        assert InputStream.endian == Endianness.BIG
+        assert stream.endian == Endianness.BIG
 
         # Read DOL section info (offset/address/size of 18 sections)
         offsets = []
@@ -38,7 +38,9 @@ class Dol(init=False):
         sizes = []
         for i in range(DOL_MAX_SECTIONS):
             offsets.append(stream.get_int32())
+        for i in range(DOL_MAX_SECTIONS):
             addresses.append(stream.get_int32())
+        for i in range(DOL_MAX_SECTIONS):
             sizes.append(stream.get_int32())
         # BSS info
         bss_addr = stream.get_int32()
@@ -66,4 +68,4 @@ class Dol(init=False):
     @staticmethod
     def open_file(path: str) -> "Dol":
         """Open DOL file by path"""
-        return Dol(InputStream.open_file(path))
+        return Dol(InputStream.open_file(path, Endianness.BIG))
