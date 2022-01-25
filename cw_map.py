@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from re import match, search
+from re import L, search
+from dol import Dol
 
 SYMBOL_NEW_REGEX = r"^\s*"\
 r"(?P<SectOfs>\w{8})\s+"\
@@ -42,10 +43,10 @@ class Symbol:
         regex = SYMBOL_OLD_REGEX if get_old_linker() else SYMBOL_NEW_REGEX
         # Search for match
         match_obj = search(regex, line)
-        if (match_obj == None):
+        if match_obj == None:
             return None
         # Old linker has no file offset
-        fileOfs = -1 if (get_old_linker()) else int(match_obj.group("FileOfs"), 16)
+        fileOfs = -1 if get_old_linker() else int(match_obj.group("FileOfs"), 16)
         # Build symbol object
         return Symbol(
                 int(match_obj.group("SectOfs"), 16),
@@ -61,13 +62,27 @@ class Map():
     symbols: list[Symbol]
 
     @staticmethod
-    def open_file(path: str) -> "Map":
+    def open_file(path: str, dol: Dol) -> "Map":
         """Open and parse symbol map file"""
         symbols = []
         with open(path, "r") as f:
             map_data = f.readlines()
         for line in map_data:
             symbol = Symbol.parse(line)
-            if (symbol != None):
+            if symbol != None:
                 symbols.append(symbol)
+        # Dummy symbol to represent the end of the DOL
+        symbols.append(Symbol(0, 0, dol.end(), 0, "DOL_END", "DUMMY"))
         return Map(symbols)
+
+    def query_start_address(self, name: str) -> int:
+        for symbol in self.symbols:
+            if symbol.name == name:
+                return symbol.virt_ofs
+        return -1
+
+    def query_end_address(self, name: str) -> int:
+        for i in range(len(self.symbols)):
+            if self.symbols[i].name == name:
+                return self.symbols[i + 1].virt_ofs
+        return -1

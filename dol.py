@@ -50,7 +50,7 @@ class Dol():
         data = []
         for i in range(DOL_MAX_SECTIONS):
             # Check for unused section
-            if (offsets[i] == 0 or addresses[i] == 0 or sizes[i] == 0):
+            if offsets[i] == 0 or addresses[i] == 0 or sizes[i] == 0:
                 data.append(bytes())
             # Seek to data offset and read section
             stream.seek(offsets[i], SeekPos.BEGIN)
@@ -70,3 +70,11 @@ class Dol():
     def open_file(path: str) -> "Dol":
         """Open DOL file by path"""
         return Dol(InputStream.open_file(path, Endianness.BIG))
+
+    def start(self) -> int:
+        return self.sections[0].address
+
+    def end(self) -> int:
+        for section in self.sections[::-1]:
+            if section.size != 0:
+                return section.address + section.size

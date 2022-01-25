@@ -43,9 +43,9 @@ class InputStream():
     def seek(self, ofs: int, seekpos: int):
         """Seek the stream position."""
         assert seekpos < SeekPos.MAX
-        if (seekpos == SeekPos.BEGIN):
+        if seekpos == SeekPos.BEGIN:
             self.pos = 0 + ofs
-        elif (seekpos == SeekPos.CURRENT):
+        elif seekpos == SeekPos.CURRENT:
             self.pos = self.pos + ofs
 
     def get_int8(self) -> int:
