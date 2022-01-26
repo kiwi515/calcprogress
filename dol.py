@@ -79,9 +79,14 @@ class Dol():
         return self.sections[0].address
 
     def end(self) -> int:
-        for section in self.sections[::-1]:
-            if section.size != 0:
-                return section.address + section.size
+        end_idx = 0
+        # Find last section in DOL
+        for i in range(DOL_MAX_SECTIONS):
+            if self.sections[i].address > self.sections[end_idx].address:
+                end_idx = i
+        # Base address + size
+        return self.sections[end_idx].address + self.sections[end_idx].size
+                
 
     def in_bss(self, sect: Section) -> bool:
         return sect.address >= self.bss.address and sect.end() <= self.bss.end()

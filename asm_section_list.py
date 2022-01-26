@@ -5,7 +5,7 @@ from re import search
 from dataclasses import dataclass
 from cw_map import Map, post_process
 
-SECTION_REGEX = r"^.section\s+(?P<Name>.[a-zA-Z0-9]+)"
+SECTION_REGEX = r"^.section\s+(?P<Name>.[a-zA-Z0-9_$]+)"
 LABEL_REGEX = r"^\s*(?P<Name>\S+):"
 
 class AsmSectionType(IntEnum):
@@ -17,8 +17,8 @@ def get_section_type(name: str) -> int:
         ".init", ".text"
         ]
     data = [
-        "extab_", "extab", "extabindex_", "extabindex", ".ctors", ".dtors",
-        ".file", ".rodata", ".data", ".bss", ".sdata", ".sbss", ".sdata2", ".sbss2"
+        "extab_", "extab", "._extab", "._exidx", "extabindex_", "extabindex", ".ctors", ".dtors", "._ctors",
+        "._dtors", ".file", ".rodata", ".data", ".bss", ".sdata", ".sbss", ".sdata2", ".sbss2"
     ]
     if name in code:
         return AsmSectionType.CODE
@@ -26,7 +26,8 @@ def get_section_type(name: str) -> int:
         return AsmSectionType.DATA
     # As a failsafe, if the section is actually unknown,
     # it is probably some unique data (like OGWS' ".file" section)
-    print(f"Unidentifiable section!!! ({name})")
+    print(f"Unidentifiable section! ({name})")
+    print("Assuming this is a DATA section.")
     return AsmSectionType.DATA
 
 def get_obj_name(path: str) -> str:
@@ -54,6 +55,7 @@ class AsmSection:
     def from_file(path: str, dol_map: Map) -> list["AsmSection"]:
         with open(path, "r") as f:
             asm = f.readlines()
+
         # Split asm file into sections
         sections = []
         section_start = -1
@@ -62,18 +64,22 @@ class AsmSection:
             if asm[i][0:8] == ".section":
                 if section_start != -1:
                     sect = AsmSection.parse_section(get_obj_name(path), asm[section_start : i], dol_map)
-                    assert sect.start != -1 and sect.end != -1 and sect.size > 0, f"Invalid section in {path}: {sect}"
+                    assert sect.start >= 0 and sect.end >= 0 and sect.size >= 0, f"Invalid section in {path}: {sect}"
                     sections.append(sect)
                 section_start = i
+
         assert section_start != -1, f"Asm file {path} contains no sections!!!"
         # Append the last section (not terminated by another section, only EOF)
         sect = AsmSection.parse_section(get_obj_name(path), asm[section_start:], dol_map)
-        assert sect.start != -1 and sect.end != -1 and sect.size > 0, f"Invalid section in {path}: {sect}"
+        assert sect.start >= 0 and sect.end >= 0 and sect.size >= 0, f"Invalid section in {path}: {sect}"
+        print(sect)
+
         sections.append(sect)
         return sections
 
     @staticmethod
     def parse_section(obj_name: str, section: list[str], dol_map: Map) -> "AsmSection":
+        # Search for label regex
         match_obj = search(SECTION_REGEX, section[0])
         assert match_obj != None, f"Invalid section start: {section[0]}"
         section_name = match_obj.group("Name")
@@ -85,6 +91,7 @@ class AsmSection:
             # Try to find label in line
             lbl_match = search(LABEL_REGEX, section[i]) 
             if lbl_match != None:
+                # Post process asm symbol, then remove quotes if applicable
                 start = dol_map.query_start_address(obj_name,
                     post_process(lbl_match.group("Name")))
                 break
@@ -99,6 +106,7 @@ class AsmSection:
         for i in range(len(section)-1, 0, -1):
             lbl_match = search(LABEL_REGEX, section[i]) 
             if lbl_match != None:
+                # Post process asm symbol, then remove quotes if applicable
                 end = dol_map.query_end_address(obj_name,
                     post_process(lbl_match.group("Name")))
                 break
