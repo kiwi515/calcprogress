@@ -96,10 +96,12 @@ class Map():
         for symbol in self.symbols:
             if symbol.name == name:
                 return symbol.virt_ofs
+        assert False, f"Symbol missing in map: {name}"
         return -1
 
     def query_end_address(self, name: str) -> int:
         for i in range(len(self.symbols)):
             if self.symbols[i].name == name:
                 return self.symbols[i + 1].virt_ofs
+        assert False, f"Symbol missing in map: {name}"
         return -1
