@@ -83,7 +83,6 @@ class Map():
     @staticmethod
     def open_file(path: str, dol: Dol) -> "Map":
         """Open and parse symbol map file"""
-        symbols = []
         symbol_dict = {}
         with open(path, "r") as f:
             map_data = f.readlines()
@@ -104,16 +103,18 @@ class Map():
                     symbol.virt_end = dol.end()
 
                 # Dict used for easy lookup
-                symbol_dict[symbol.name] = symbol
+                # Key is symbol + object to allow local symbols to not collide in the dict
+                symbol_dict[f"{symbol.name}{symbol.object_file}"] = symbol
+                print(f"{symbol.name}{symbol.object_file}")
 
         return Map(symbol_dict)
 
-    def query_start_address(self, name: str) -> int:
-        symb = self.symbol_dict[name]
-        assert symb != None, f"Symbol missing in map: {name}"
+    def query_start_address(self, filename: str, name: str) -> int:
+        symb = self.symbol_dict[f"{name}{filename}"]
+        assert symb != None, f"Symbol missing in map: {name}{filename}"
         return symb.virt_ofs
 
-    def query_end_address(self, name: str) -> int:
-        symb = self.symbol_dict[name]
-        assert symb != None, f"Symbol missing in map: {name}"
+    def query_end_address(self, filename: str, name: str) -> int:
+        symb = self.symbol_dict[f"{name}{filename}"]
+        assert symb != None, f"Symbol missing in map: {name}{filename}"
         return symb.virt_end

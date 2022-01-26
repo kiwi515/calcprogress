@@ -1,4 +1,5 @@
 from os import walk, sep
+from os.path import basename
 from enum import IntEnum
 from re import search
 from dataclasses import dataclass
@@ -27,6 +28,16 @@ def get_section_type(name: str) -> int:
     print(f"Unidentifiable section!!! ({name})")
     return AsmSectionType.DATA
 
+def get_obj_name(path: str) -> str:
+    # Get base file name
+    file_name = basename(path)
+    # Extract file extension/name
+    dot_idx = file_name.rfind(".")
+    file_ext = file_name[dot_idx:]
+    file_name = file_name[:dot_idx]
+    # Create object file name
+    return f"{file_name}.o"
+
 @dataclass
 class AsmSection:
     start: int
@@ -49,19 +60,19 @@ class AsmSection:
             # Section start
             if asm[i][0:8] == ".section":
                 if section_start != -1:
-                    sect = AsmSection.parse_section(asm[section_start : i], dol_map)
-                    assert sect.start != -1 and sect.end != -1, f"Invalid section in {path}: {sect}"
+                    sect = AsmSection.parse_section(get_obj_name(path), asm[section_start : i], dol_map)
+                    assert sect.start != -1 and sect.end != -1 and sect.size > 0, f"Invalid section in {path}: {sect}"
                     sections.append(sect)
                 section_start = i
         assert section_start != -1, f"Asm file {path} contains no sections!!!"
         # Append the last section (not terminated by another section, only EOF)
-        sect = AsmSection.parse_section(asm[section_start:], dol_map)
-        assert sect.start != -1 and sect.end != -1, f"Invalid section in {path}: {sect}"
+        sect = AsmSection.parse_section(get_obj_name(path), asm[section_start:], dol_map)
+        assert sect.start != -1 and sect.end != -1 and sect.size > 0, f"Invalid section in {path}: {sect}"
         sections.append(sect)
         return sections
 
     @staticmethod
-    def parse_section(section: list[str], dol_map: Map) -> "AsmSection":
+    def parse_section(obj_name: str, section: list[str], dol_map: Map) -> "AsmSection":
         match_obj = search(SECTION_REGEX, section[0])
         assert match_obj != None, f"Invalid section start: {section[0]}"
         section_name = match_obj.group("Name")
@@ -71,21 +82,21 @@ class AsmSection:
         # Find first label in section
         for i in range(0, len(section), 1):
             if section[i].endswith(":\n"):
-                start = dol_map.query_start_address(
+                start = dol_map.query_start_address(obj_name,
                         post_process(section[i].replace(":\n", "")))
                 break
         # Fix for unlabeled sections (search by section name)
         if start == 0:
-            start = dol_map.query_start_address(section_name)
+            start = dol_map.query_start_address(obj_name, section_name)
         # Find last label in section
         for i in range(len(section)-1, 0, -1):
             if section[i].endswith(":\n"):
-                end = dol_map.query_end_address(
+                end = dol_map.query_end_address(obj_name,
                         post_process(section[i].replace(":\n", "")))
                 break
         # Fix for unlabeled sections (search by section name)
         if end == 0:
-            end = dol_map.query_end_address(section_name)
+            end = dol_map.query_end_address(obj_name, section_name)
         return AsmSection(start, end, end - start, get_section_type(section_name))
 
 
