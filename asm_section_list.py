@@ -47,7 +47,7 @@ class AsmSection:
         section_start = -1
         for i in range(len(asm)):
             # Section start
-            if asm[i].startswith(".section"):
+            if asm[i][0:8] == ".section":
                 if section_start != -1:
                     sect = AsmSection.parse_section(asm[section_start : i], dol_map)
                     assert sect.start != -1 and sect.end != -1, f"Invalid section in {path}: {sect}"
