@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from cw_map import Map, post_process
 
 SECTION_REGEX = r"^.section\s+(?P<Name>.[a-zA-Z0-9]+)"
+LABEL_REGEX = r"^\s*(?P<Name>\S+):"
 
 class AsmSectionType(IntEnum):
     CODE = 0
@@ -81,19 +82,30 @@ class AsmSection:
         end = 0
         # Find first label in section
         for i in range(0, len(section), 1):
-            if section[i].endswith(":\n"):
+            # Try to find label in line
+            lbl_match = search(LABEL_REGEX, section[i]) 
+            if lbl_match != None:
                 start = dol_map.query_start_address(obj_name,
-                        post_process(section[i].replace(":\n", "")))
+                    post_process(lbl_match.group("Name")))
                 break
+            # if section[i].endswith(":\n"):
+            #     start = dol_map.query_start_address(obj_name,
+            #             post_process(section[i].replace(":\n", "")))
+            #     break
         # Fix for unlabeled sections (search by section name)
         if start == 0:
             start = dol_map.query_start_address(obj_name, section_name)
         # Find last label in section
         for i in range(len(section)-1, 0, -1):
-            if section[i].endswith(":\n"):
+            lbl_match = search(LABEL_REGEX, section[i]) 
+            if lbl_match != None:
                 end = dol_map.query_end_address(obj_name,
-                        post_process(section[i].replace(":\n", "")))
+                    post_process(lbl_match.group("Name")))
                 break
+            # if section[i].endswith(":\n"):
+            #     end = dol_map.query_end_address(obj_name,
+            #             post_process(section[i].replace(":\n", "")))
+            #     break
         # Fix for unlabeled sections (search by section name)
         if end == 0:
             end = dol_map.query_end_address(obj_name, section_name)

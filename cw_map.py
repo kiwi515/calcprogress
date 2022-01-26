@@ -105,7 +105,6 @@ class Map():
                 # Dict used for easy lookup
                 # Key is symbol + object to allow local symbols to not collide in the dict
                 symbol_dict[f"{symbol.name}{symbol.object_file}"] = symbol
-                print(f"{symbol.name}{symbol.object_file}")
 
         return Map(symbol_dict)
 

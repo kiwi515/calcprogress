@@ -22,10 +22,14 @@ class Section:
     type: int
     data: bytes
 
+    def end(self) -> int:
+        return self.address + self.size
+
 @dataclass
 class Dol():
     """Dolphin executable"""
     sections: list[Section]
+    bss: Section
 
     def __init__(self, stream: InputStream) -> "Dol":
         # DOL data is in big endian
@@ -57,13 +61,14 @@ class Dol():
 
         self.sections = []
         # Construct section objects (0-7)
-        for i in range(DOL_MAX_CODE_SECTIONS):
+        for i in range(0, DOL_MAX_CODE_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], DolSectionType.CODE, data[i]))
-        # Construct section objects (7-11)
-        for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_DATA_SECTIONS):
+        # Construct section objects (11-18)
+        for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], DolSectionType.DATA, data[i]))
         # Construct BSS section
-        self.sections.append(Section(-1, bss_addr, bss_size, DolSectionType.BSS, bytes(bss_size)))
+        self.bss = Section(-1, bss_addr, bss_size, DolSectionType.BSS, bytes(bss_size))
+        self.sections.append(self.bss)
 
     @staticmethod
     def open_file(path: str) -> "Dol":
@@ -78,6 +83,9 @@ class Dol():
             if section.size != 0:
                 return section.address + section.size
 
+    def in_bss(self, sect: Section) -> bool:
+        return sect.address >= self.bss.address and sect.end() <= self.bss.end()
+
     def code_size(self) -> int:
         size = 0
         for i in self.sections:
@@ -88,6 +96,7 @@ class Dol():
     def data_size(self) -> int:
         size = 0
         for i in self.sections:
-            if i.type == DolSectionType.DATA or i.type == DolSectionType.BSS:
+            # Count data sections that are not encompassed by the BSS
+            if i.type == DolSectionType.DATA and not self.in_bss(i):
                 size += i.size
-        return size
+        return size + self.bss.size
