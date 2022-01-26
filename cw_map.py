@@ -2,6 +2,23 @@ from dataclasses import dataclass
 from re import L, search
 from dol import Dol
 
+# Symbols must be post-processed when queried
+substitutions = (
+    ('<',  '$$0'),
+    ('>',  '$$1'),
+    ('@',  '$$2'),
+    ('\\', '$$3'),
+    (',',  '$$4'),
+    ('-',  '$$5'),
+    ('func_800B1834',  '__register_global_object'),
+    ('',  '____')
+)
+
+def post_process(symb: str) -> str:
+    for sub in substitutions:
+        symb = symb.replace(sub[0], sub[1])
+    return symb
+
 SYMBOL_NEW_REGEX = r"^\s*"\
 r"(?P<SectOfs>\w{8})\s+"\
 r"(?P<Size>\w{6})\s+"\
