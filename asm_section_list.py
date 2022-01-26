@@ -49,14 +49,14 @@ class AsmSection:
             # Section start
             if asm[i].startswith(".section"):
                 if section_start != -1:
-                    sections.append(AsmSection.parse_section(asm[section_start : i], dol_map))
+                    sect = AsmSection.parse_section(asm[section_start : i], dol_map)
+                    assert sect.start != -1 and sect.end != -1, f"Invalid section in {path}: {sect}"
+                    sections.append(sect)
                 section_start = i
         assert section_start != -1, f"Asm file {path} contains no sections!!!"
         # Append the last section (not terminated by another section, only EOF)
         sect = AsmSection.parse_section(asm[section_start:], dol_map)
-        if sect.start == -1 or sect.end == -1:
-            if not (sect.start == -1 and sect.end == -1):
-                print(f"Invalid section in {path}: {sect}")
+        assert sect.start != -1 and sect.end != -1, f"Invalid section in {path}: {sect}"
         sections.append(sect)
         return sections
 
