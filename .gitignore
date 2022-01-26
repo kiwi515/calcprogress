@@ -1,3 +1,4 @@
+__pycache__/
 *.dol
 *.map
-__pycache__/
+asm/

@@ -26,7 +26,6 @@ class Section:
 class Dol():
     """Dolphin executable"""
     sections: list[Section]
-    bss: Section
 
     def __init__(self, stream: InputStream) -> "Dol":
         # DOL data is in big endian
@@ -64,7 +63,7 @@ class Dol():
         for i in range(DOL_MAX_CODE_SECTIONS, DOL_MAX_DATA_SECTIONS):
             self.sections.append(Section(offsets[i], addresses[i], sizes[i], SectionType.DATA, data[i]))
         # Construct BSS section
-        self.bss = Section(-1, bss_addr, bss_size, SectionType.BSS, bytes(bss_size))
+        self.sections.append(Section(-1, bss_addr, bss_size, SectionType.BSS, bytes(bss_size)))
 
     @staticmethod
     def open_file(path: str) -> "Dol":
@@ -78,3 +77,17 @@ class Dol():
         for section in self.sections[::-1]:
             if section.size != 0:
                 return section.address + section.size
+
+    def code_size(self) -> int:
+        size = 0
+        for i in self.sections:
+            if i.type == SectionType.CODE:
+                size += i.size
+        return size
+
+    def data_size(self) -> int:
+        size = 0
+        for i in self.sections:
+            if i.type == SectionType.DATA or i.type == SectionType.BSS:
+                size += i.size
+        return size
