@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from dol import Dol, Section
-from asm_section_list import AsmSectionList, SectionType
+from asm_section_list import AsmSectionList, AsmSectionType
 
 @dataclass
 class Slice:
@@ -17,9 +17,9 @@ def calc_generic_progress(dol: Dol, asm_list: AsmSectionList):
     asm_code_size = 0
     asm_data_size = 0
     for section in asm_list.sections:
-        if section.type == SectionType.CODE:
+        if section.type == AsmSectionType.CODE:
             asm_code_size += section.size
-        elif section.type == SectionType.DATA:
+        elif section.type == AsmSectionType.DATA:
             asm_data_size += section.size
         else:
             assert False, f"Invalid section type ({section.type})!"

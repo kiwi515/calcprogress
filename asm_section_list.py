@@ -6,7 +6,7 @@ from cw_map import Map, post_process
 
 SECTION_REGEX = r"^.section\s+(?P<Name>.[a-zA-Z0-9]+)"
 
-class SectionType(IntEnum):
+class AsmSectionType(IntEnum):
     CODE = 0
     DATA = 1
 
@@ -19,13 +19,13 @@ def get_section_type(name: str) -> int:
         ".file", ".rodata", ".data", ".bss", ".sdata", ".sbss", ".sdata2", ".sbss2"
     ]
     if name in code:
-        return SectionType.CODE
+        return AsmSectionType.CODE
     elif name in data:
-        return SectionType.DATA
+        return AsmSectionType.DATA
     # As a failsafe, if the section is actually unknown,
     # it is probably some unique data (like OGWS' ".file" section)
     print(f"Unidentifiable section!!! ({name})")
-    return SectionType.DATA
+    return AsmSectionType.DATA
 
 @dataclass
 class AsmSection:
