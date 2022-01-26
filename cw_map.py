@@ -49,6 +49,7 @@ class Symbol:
     sect_ofs: int
     size: int
     virt_ofs: int
+    virt_end: int
     file_ofs: int
     name: str
     object_file: str
@@ -69,6 +70,7 @@ class Symbol:
                 int(match_obj.group("SectOfs"), 16),
                 int(match_obj.group("Size"), 16),
                 int(match_obj.group("VirtOfs"), 16),
+                -1, # End address set later
                 fileOfs,
                 match_obj.group("Symbol"),
                 match_obj.group("Object"))
@@ -76,32 +78,42 @@ class Symbol:
 
 @dataclass
 class Map():
-    symbols: list[Symbol]
+    symbol_dict: dict[str, Symbol]
 
     @staticmethod
     def open_file(path: str, dol: Dol) -> "Map":
         """Open and parse symbol map file"""
         symbols = []
+        symbol_dict = {}
         with open(path, "r") as f:
             map_data = f.readlines()
-        for line in map_data:
-            symbol = Symbol.parse(line)
+        # Parse symbol from each line of map
+        for i in range(len(map_data)):
+            symbol = Symbol.parse(map_data[i])
             if symbol != None:
-                symbols.append(symbol)
-        # Dummy symbol to represent the end of the DOL
-        symbols.append(Symbol(0, 0, dol.end(), 0, "DOL_END", "DUMMY"))
-        return Map(symbols)
+                # Set current symbol end address to next symbol start address.
+                try:
+                    sym = None
+                    while sym == None:
+                        sym = Symbol.parse(map_data[i + 1])
+                        i += 1
+                    symbol.virt_end = sym.virt_ofs
+
+                # If there is no "next symbol", we use the end of the DOL
+                except IndexError:
+                    symbol.virt_end = dol.end()
+
+                # Dict used for easy lookup
+                symbol_dict[symbol.name] = symbol
+
+        return Map(symbol_dict)
 
     def query_start_address(self, name: str) -> int:
-        for symbol in self.symbols:
-            if symbol.name == name:
-                return symbol.virt_ofs
-        assert False, f"Symbol missing in map: {name}"
-        return -1
+        symb = self.symbol_dict[name]
+        assert symb != None, f"Symbol missing in map: {name}"
+        return symb.virt_ofs
 
     def query_end_address(self, name: str) -> int:
-        for i in range(len(self.symbols)):
-            if self.symbols[i].name == name:
-                return self.symbols[i + 1].virt_ofs
-        assert False, f"Symbol missing in map: {name}"
-        return -1
+        symb = self.symbol_dict[name]
+        assert symb != None, f"Symbol missing in map: {name}"
+        return symb.virt_end
