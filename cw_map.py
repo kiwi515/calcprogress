@@ -16,7 +16,7 @@ substitutions = (
 
 def post_process(symb: str) -> str:
     for sub in substitutions:
-        symb = symb.replace(sub[0], sub[1])
+        symb = symb.replace(sub[1], sub[0])
     return symb
 
 SYMBOL_NEW_REGEX = r"^\s*"\
