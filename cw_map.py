@@ -98,8 +98,6 @@ class Map():
                 # Dict used for easy lookup
                 # Key is symbol + object to allow local symbols to not collide in the dict
                 symbol_dict[f"{symbol.name}{symbol.object_file}"] = symbol
-                # print(f"Map::open_file: start={symbol.virt_ofs} end={symbol.virt_end} sz={symbol.size} name={symbol.name} obj={symbol.object_file}")
-                print(symbol.size)
                 
         return Map(symbol_dict)
 

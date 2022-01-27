@@ -72,7 +72,6 @@ class AsmSection:
         # Append the last section (not terminated by another section, only EOF)
         sect = AsmSection.parse_section(get_obj_name(path), asm[section_start:], dol_map)
         assert sect.start >= 0 and sect.end >= 0 and sect.size >= 0, f"Invalid section in {path}: {sect}"
-        print(sect)
 
         sections.append(sect)
         return sections
