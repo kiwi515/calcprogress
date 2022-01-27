@@ -5,6 +5,9 @@
    - `DOL_PATH`: Path to the game DOL
    - `MAP_PATH`: Path to the generated symbol map
    - `ASM_PATH`: Path to the root directory of the project's assembly files
+   - `OBJ_FILES_PATH`: Path to the makefile's list of object files, `obj_files.mk` (default: `"obj_files.mk"`)
+   - `ASM_FILE_EXT`: File extension of the project's assembly code (default: `".s"`)
+   - `USE_OLD_LINKER`: Toggle map format seen by older GC linkers that are missing the file offset column (default: `False`)
 2. Optionally, create `Slice` objects for areas of the DOL you would like to specifically track progress, such as libraries.
     - For each group of slices you would like to track, put them into a list, which should be inserted into a `SliceGroup` object inside `DOL_SLICE_GROUPS`.
     - Progress for groups in `DOL_SLICE_GROUPS` will be shown separately, underneath the general code/data progress.
@@ -26,17 +29,21 @@
 
         Code sections: 134324 / 3473024 bytes in src (3.867638%)
         Data sections: 142162 / 1518492 bytes in src (9.362051%)
-
         Slices:
             NW4R: 104628 / 508360 bytes in src (20.581478%)
         ```
-3. Run `main.py`
+3. Run `main.py` to print out the project progress.
+   - If you would like to add extra behavior when printing the progress for your project, see `calc_generic_progress` and `calc_slice_progress` in `progress.py`
 ## Design
- - Rather than calculating the size of decompiled source files, this script does the opposite:
-1. First, the base DOL is opened to get information about its sections.
-2. Then, the decomp project's symbol map is parsed to create a dictionary for getting a given symbol's virtual address.
-3. Finally, all of the assembly files in the project are parsed, and each section in them (designated with the `.section` directive) is given a size based on the location of its start/end label in the symbol map.
-4. Lastly, the sizes of the data still in assembly are summed up and subtracted from the DOL's total sizes for each section.
+ - Rather than calculating the size of decompiled source files, this script opts to get the size of the non-decompiled, assembly files:
+1. Base DOL is read to get the total code/data size
+2. Symbol map is parsed to find all section header symbols in each source file.
+   - Section header symbols refer to the first symbol in a given section (`.section` directive).
+   - With sections containing pure assembly, the size of the first (header) symbol will contain the size of the entire section (before alignment), so it is used to easily find the size of the section's assembly.
+   - In version r39 and earlier of devkitPPC, its assembler would title these header symbols with the name of the section. r40 now uses the name of the first symbol: regardless, it still reveals the whole section size.
+3. `obj_files.mk` is parsed to determine what assembly files are going to be linked.
+   - This is not required by this design but saves time by not parsing any additional assembly that is not needed.
+4. All assembly listed above is parsed for `.section` directives, which are tracked by their size and type (code/data).
+5. Assembly section sizes are summed up against the code/data sum found by the DOL's sections.
 ## Credits
- - Twilight Princess team from zeldaret, for the concept of calculating asm size used by [their own script](https://github.com/zeldaret/tp/blob/master/tools/tp.py)
- - Riidefi, for creating [`postprocess.py`](https://github.com/riidefi/compiler_postprocess/blob/master/postprocess.py), which is used here for compatibility with projects that rely on it to have special characters in symbols
+ - Twilight Princess team from zeldaret, for the concept of calculating progress by finding the size of the assembly, rather than trying to assume what has been decompiled from the map

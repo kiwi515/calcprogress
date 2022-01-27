@@ -10,7 +10,7 @@ from obj_files_mk import ObjFilesMk
 DOL_PATH = "build/main.dol"
 MAP_PATH = "build/ogws_us_r1.map"
 ASM_PATH = "asm"
-OBJ_FILES_PATH = "build/obj_files.mk"
+OBJ_FILES_PATH = "obj_files.mk"
 ASM_FILE_EXT = ".s"
 USE_OLD_LINKER = False
 
