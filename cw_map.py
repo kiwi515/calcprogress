@@ -98,7 +98,8 @@ class Map():
                 obj_file = symbol.object_file
                 if obj_file != curr_object:
                     # Create object file entry
-                    self.headers[obj_file] = dict()
+                    if obj_file not in self.headers:
+                        self.headers[obj_file] = dict()
                     # Create header symbol entry
                     self.headers[obj_file][sect_name] = symbol
                     # Set current object file
