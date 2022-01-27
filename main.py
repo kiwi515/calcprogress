@@ -1,3 +1,5 @@
+"""For more information on how to setup or use this tool, view the README."""
+
 from asm_section_list import AsmSectionList
 from dol import Dol
 from cw_map import Map
@@ -10,20 +12,16 @@ MAP_PATH = "build/ogws_us_r1.map"
 ASM_PATH = "asm"
 OBJ_FILES_PATH = "build/obj_files.mk"
 ASM_FILE_EXT = ".s"
+USE_OLD_LINKER = False
 
-"""Example slice to track NW4R code."""
-NW4R_SLICES = [
-    # NW4R .text section
-    Slice(0x800076e0, 0x800838a8)
-]
 """All DOL slice groups.
 - This is designed for tracking multiple slices together.
 - The script will always display generic code/data progress,
   but you can add groups here to track things like libraries.
-(Some examples are below)
+  (See the README for an example.)
 """
 DOL_SLICE_GROUPS = [
-    SliceGroup("NW4R", NW4R_SLICES),
+    # SliceGroup("My Slice Group", MY_SLICE_LIST),
 ]
 
 def main():
@@ -31,8 +29,7 @@ def main():
     dol = Dol.open_file(DOL_PATH)
 
     # Open link map
-    # Set 'old_linker' if you use the old map format
-    dol_map = Map(MAP_PATH, old_linker=False)
+    dol_map = Map(MAP_PATH, USE_OLD_LINKER)
 
     # Compile list of asm files
     obj_files = ObjFilesMk(OBJ_FILES_PATH, ASM_PATH, ASM_FILE_EXT)
@@ -43,8 +40,9 @@ def main():
     # Calculate generic progress (code/data)
     calc_generic_progress(dol, asm_list.sections)
     # Calculate progress of slices
-    print("Slices:")
-    for group in DOL_SLICE_GROUPS:
-        calc_slice_progress(group, asm_list.sections)
+    if len(DOL_SLICE_GROUPS) > 0:
+        print("Slices:")
+        for group in DOL_SLICE_GROUPS:
+            calc_slice_progress(group, asm_list.sections)
 
 main()
