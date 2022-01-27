@@ -1,23 +1,5 @@
 from dataclasses import dataclass
 from re import search
-from dol import Dol
-
-# Symbols must be post-processed when queried
-substitutions = (
-    ('<',  '$$0'),
-    ('>',  '$$1'),
-    ('@',  '$$2'),
-    ('\\', '$$3'),
-    (',',  '$$4'),
-    ('-',  '$$5'),
-    ('',  '____'),
-    ('', '\n'),
-    ('', '\"')
-)
-def post_process(symb: str) -> str:
-    for sub in substitutions:
-        symb = symb.replace(sub[1], sub[0])
-    return symb
 
 SYMBOL_NEW_REGEX = r"^\s*"\
 r"(?P<SectOfs>\w{8})\s+"\
@@ -36,6 +18,8 @@ r"(\d{1,2}\s+)?"\
 r"(?P<Symbol>[0-9A-Za-z_<>$@.,*\\]*)"\
 r"(\s+\(entry of.*\)\s+)?\s*"\
 r"(?P<Object>\S*)"
+
+MAP_SECTION_REGEX = r"^(?P<Name>\S+)\ssection layout"
 
 @dataclass
 class Symbol:
@@ -71,48 +55,52 @@ class Symbol:
 
 @dataclass
 class Map():
-    symbol_dict: dict[str, Symbol]
+    # Dictionary of section header symbols.
+    # Outer dict key = object file name, value = header dict
+    # Header dict key = section name, value = header symbol
+    headers: dict[str, dict[str, Symbol]]
 
-    @staticmethod
-    def open_file(path: str, dol: Dol, old_linker: bool) -> "Map":
+    def __init__(self, path: str, old_linker: bool):
         """Open and parse symbol map file"""
-        symbol_dict = {}
+        # Initialize dict
+        self.headers = dict()
+        # Read asm
         with open(path, "r") as f:
             map_data = f.readlines()
-        # Parse symbol from each line of map
+
+        # Current object file
+        curr_obj = None
+        # Start of current section
+        sect_start = -1
+        # Parse each section of the symbol map
         for i in range(len(map_data)):
-            symbol = Symbol.parse(map_data[i], old_linker)
-            if symbol != None:
-                # Set current symbol end address to next symbol start address.
-                try:
-                    sym = None
-                    while sym == None:
-                        sym = Symbol.parse(map_data[i + 1], old_linker)
-                        i += 1
-                    symbol.virt_end = sym.virt_ofs
-
-                # If there is no "next symbol", we use the end of the DOL
-                except IndexError:
-                    symbol.virt_end = dol.end()
-
-                # Dict used for easy lookup
-                # Key is symbol + object to allow local symbols to not collide in the dict
-                symbol_dict[f"{symbol.name}{symbol.object_file}"] = symbol
+            # Search for "* section layout"
+            sect_match = search(MAP_SECTION_REGEX, map_data[i])
+            if sect_match != None:
+                # Parse current section if this is not the first section
+                if sect_start != -1:
+                    self.parse_section(sect_name, map_data[sect_start:i], old_linker)
+                else:
+                    sect_name = sect_match.group("Name")
+                sect_start = i
                 
-        return Map(symbol_dict)
-
-    def query_start_address(self, filename: str, name: str) -> int:
-        try:
-            symb = self.symbol_dict[f"{name}{filename}"]
-        except KeyError:
-            # print(f"Symbol missing in map: {name} in {filename}")
-            return 0
-        return symb.virt_ofs
-
-    def query_end_address(self, filename: str, name: str) -> int:
-        try:
-            symb = self.symbol_dict[f"{name}{filename}"]
-        except KeyError:
-            # print(f"Symbol missing in map: {name} in {filename}")
-            return 0
-        return symb.virt_end
+    def parse_section(self, sect_name: str, map_data: list[str], old_linker: bool):
+        """Parse a section of the map file, generating header symbols"""
+        # Compatability with older link maps (missing file offset column)
+        symbol_regex = SYMBOL_OLD_REGEX if old_linker else SYMBOL_NEW_REGEX
+        
+        # Find header symbols
+        curr_object = None
+        for line in map_data:
+            # Search for symbol in current line
+            symbol = Symbol.parse(line, old_linker)
+            if symbol != None:
+                # "Header symbol" refers to the first symbol in the object file
+                obj_file = symbol.object_file
+                if obj_file != curr_object:
+                    # Create object file entry
+                    self.headers[obj_file] = dict()
+                    # Create header symbol entry
+                    self.headers[obj_file][sect_name] = symbol
+                    # Set current object file
+                    curr_object = obj_file

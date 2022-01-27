@@ -29,14 +29,14 @@ ASM_PATH = "build/pik/asm"
 def main():
     # Open DOL
     dol = Dol.open_file(DOL_PATH)
+
     # Open link map
     # Set 'old_linker' if you use the old map format
-    dol_map = Map.open_file(MAP_PATH, dol, old_linker=True)
+    dol_map = Map(MAP_PATH, old_linker=True)
     # Analyze asm file sizes
-    asm_list = AsmSectionList()
-    asm_list.build(ASM_PATH, dol_map)
+    asm_list = AsmSectionList(ASM_PATH, dol_map)
 
     # Calculate generic progress (code/data)
-    calc_generic_progress(dol, asm_list)
+    # calc_generic_progress(dol, asm_list)
 
 main()
