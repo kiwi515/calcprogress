@@ -13,6 +13,7 @@ class DolSectionType(Enum):
     DATA = 1
     BSS = 2
 
+
 @dataclass
 class Section:
     """Dol section (code/data)"""
@@ -24,6 +25,7 @@ class Section:
 
     def end(self) -> int:
         return self.address + self.size
+
 
 @dataclass
 class Dol():
@@ -86,7 +88,6 @@ class Dol():
                 end_idx = i
         # Base address + size
         return self.sections[end_idx].address + self.sections[end_idx].size
-                
 
     def in_bss(self, sect: Section) -> bool:
         return sect.address >= self.bss.address and sect.end() <= self.bss.end()
