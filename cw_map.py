@@ -80,9 +80,8 @@ class Map():
                 # Parse current section if this is not the first section
                 if sect_start != -1:
                     self.parse_section(sect_name, map_data[sect_start:i], old_linker)
-                else:
-                    sect_name = sect_match.group("Name")
                 sect_start = i
+                sect_name = sect_match.group("Name")
                 
     def parse_section(self, sect_name: str, map_data: list[str], old_linker: bool):
         """Parse a section of the map file, generating header symbols"""
