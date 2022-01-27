@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from dol import Dol, Section
-from asm_section_list import AsmSectionList, AsmSectionType
+from dol import Dol
+from asm_section_list import AsmSection, AsmSectionType
 
 @dataclass
 class Slice:
@@ -12,11 +12,11 @@ class SliceGroup:
     name: str
     slices: list[Slice]
 
-def calc_generic_progress(dol: Dol, asm_list: AsmSectionList):
+def calc_generic_progress(dol: Dol, asm_list: list[AsmSection]):
     # Sum up code/data in ASM
     asm_code_size = 0
     asm_data_size = 0
-    for section in asm_list.sections:
+    for section in asm_list:
         if section.type == AsmSectionType.CODE:
             asm_code_size += section.size
         elif section.type == AsmSectionType.DATA:

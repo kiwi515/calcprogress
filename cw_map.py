@@ -85,8 +85,6 @@ class Map():
                 
     def parse_section(self, sect_name: str, map_data: list[str], old_linker: bool):
         """Parse a section of the map file, generating header symbols"""
-        # Compatability with older link maps (missing file offset column)
-        symbol_regex = SYMBOL_OLD_REGEX if old_linker else SYMBOL_NEW_REGEX
         
         # Find header symbols
         curr_object = None

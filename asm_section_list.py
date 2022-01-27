@@ -1,4 +1,3 @@
-from os import walk, sep
 from os.path import basename
 from enum import IntEnum
 from re import search
@@ -49,15 +48,10 @@ class AsmSection:
 class AsmSectionList:
     sections: list[AsmSection]
     
-    def __init__(self, path: str, dol_map: Map):
+    def __init__(self, sources: list[str], dol_map: Map):
         self.sections = []
-        for subdir, dirs, files in walk(path):
-            for filename in files:
-                filepath = subdir + sep + filename
-                # Make sure file is actually ASM
-                file_ext = filepath[filepath.rfind("."):]
-                if file_ext.lower() == ".asm" or file_ext.lower() == ".s":
-                    self.parse_file(filepath, dol_map)
+        for file in sources:
+            self.parse_file(file, dol_map)
 
     def parse_file(self, path: str, dol_map: Map):
         # Read asm
@@ -75,4 +69,5 @@ class AsmSectionList:
                 my_header = my_file_headers[sect_name]
                 # Create summable section object
                 section = AsmSection(my_header.virt_ofs, my_header.size, get_section_type(sect_name))
+                assert section.start > 0 and section.size >= 0
                 self.sections.append(section)
