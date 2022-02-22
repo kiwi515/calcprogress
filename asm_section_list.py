@@ -51,7 +51,7 @@ class AsmSectionList:
     def __init__(self, sources: list[str], dol_map: Map):
         self.sections = []
         for file in sources:
-            self.parse_file(file, dol_map)
+            self.parse_file(file.strip(), dol_map)
 
     def parse_file(self, path: str, dol_map: Map):
         # Read asm
