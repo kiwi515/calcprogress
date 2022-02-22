@@ -82,6 +82,8 @@ class Map():
                     self.parse_section(sect_name, map_data[sect_start:i], old_linker)
                 sect_start = i
                 sect_name = sect_match.group("Name")
+        # Parse last section to EOF
+        self.parse_section(sect_name, map_data[sect_start:i], old_linker)
                 
     def parse_section(self, sect_name: str, map_data: list[str], old_linker: bool):
         """Parse a section of the map file, generating header symbols"""
