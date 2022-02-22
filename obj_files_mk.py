@@ -10,6 +10,10 @@ class ObjFilesMk:
         return path.strip().replace("\\", "").replace("\n", "")
 
     def __init__(self, path: str, asm_dir: str, file_ext: str):
+        # Ensure asm dir has slash
+        if not asm_dir.endswith("/"):
+            asm_dir = f"{asm_dir}/"
+
         self.asm_dir = asm_dir
         self.files = []
         self.file_ext = file_ext
