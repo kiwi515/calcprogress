@@ -55,7 +55,7 @@ class AsmSectionList:
 
     def parse_file(self, path: str, dol_map: Map):
         # Read asm
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
             asm = f.readlines()
         # Find sections in asm file by looking for .section directives
         for i in range(len(asm)):
