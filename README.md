@@ -1,5 +1,8 @@
 # calcprogress
  Progress checker for GC/Wii decompilation projects that use the CodeWarrior linker + devkitPPC GNU assembler
+## Known Bugs
+  - When assembly and source files have the same name, only the first one will be seen in the map, as the tool cannot distinguish between them.
+    - This can cause incorrect results when the source file is not linked *first* before the assembly.
 ## Instructions
 1. In `main.py`, configure the following settings for your project:
    - `DOL_PATH`: Path to the game DOL
