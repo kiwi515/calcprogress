@@ -4,3 +4,4 @@ __pycache__/
 asm/
 asm_old/
 build/
+tests/
