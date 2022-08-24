@@ -20,7 +20,7 @@ def main(groups: list[SliceGroup], exec_callback: "function", group_callback: "f
     parser.add_argument("--asm-root", nargs="?", type=str,
                         required=False, default="asm/", help="Path to asm")
     parser.add_argument("--asm-src-ext", nargs="?", type=str, required=False,
-                        default=".s", help="Custom assembly source file extension (such as Melee's \".s.o\")")
+                        default=".s", help="Custom assembly source file extension")
     parser.add_argument("--asm-obj-ext", nargs="?", type=str, required=False,
                         default=".o", help="Custom assembly object file extension (such as Melee's \".s.o\")")
     parser.add_argument("--obj-files-mk", nargs="?", type=str, required=False,

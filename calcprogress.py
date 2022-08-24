@@ -30,7 +30,7 @@ DOL_SLICE_GROUPS = [
 ]
 
 
-def exec_progress_callback(src_code, total_code, src_data, total_data):
+def exec_progress_callback(src_code: int, total_code: int, src_data: int, total_data: int):
     """Executable (DOL/REL) progress callback.
     Any game-specific counters or extra things should go here.
     """
@@ -43,7 +43,7 @@ def exec_progress_callback(src_code, total_code, src_data, total_data):
     print(f"{total_percent}% of this executable has been decompiled")
 
 
-def slice_group_progress_callback(name, src_size, total_size):
+def slice_group_progress_callback(name: str, src_size: int, total_size: int):
     """Slice group progress callback.
     Any game-specific counters or extra things should go here.
     """
