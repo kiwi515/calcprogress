@@ -19,13 +19,13 @@ calcprogress
 
 from src.main import main
 
-"""All DOL slice groups.
+"""All executable slice groups.
 - This is designed for tracking multiple slices together.
 - The script will always display generic code/data progress,
   but you can add groups here to track things like libraries.
   (See the README for an example.)
 """
-DOL_SLICE_GROUPS = [
+EXEC_SLICE_GROUPS = [
     # SliceGroup("My Slice Group", [MySlice1, MySlice2, MySlice3, ...]),
 ]
 
@@ -54,5 +54,5 @@ def slice_group_progress_callback(name: str, src_size: int, total_size: int):
 
 
 if __name__ == "__main__":
-    main(DOL_SLICE_GROUPS, exec_progress_callback,
+    main(EXEC_SLICE_GROUPS, exec_progress_callback,
          slice_group_progress_callback)

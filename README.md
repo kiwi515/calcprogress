@@ -1,19 +1,40 @@
 # calcprogress
  Progress checker for GC/Wii decompilation projects that use the CodeWarrior linker + devkitPPC GNU assembler
-## Known Bugs
+## Limitations
   - When assembly and source files have the same name, only the first one will be seen in the map, as calcprogress cannot distinguish between them.
-    - This can cause incorrect results when the source file is not linked *first* before the assembly.
-## Instructions
-1. In `main.py`, configure the following settings for your project:
-   - `DOL_PATH`: Path to the game DOL
-   - `MAP_PATH`: Path to the generated symbol map
-   - `ASM_PATH`: Path to the root directory of the project's assembly files
-   - `OBJ_FILES_PATH`: Path to the makefile's list of object files, `obj_files.mk` (default: `"obj_files.mk"`)
-   - `ASM_FILE_EXT`: File extension of the project's assembly code (default: `".s"`)
-   - `USE_OLD_LINKER`: Toggle map format seen by older GC linkers that are missing the file offset column (default: `False`)
-2. Optionally, create `Slice` objects for areas of the DOL you would like to specifically track progress, such as libraries.
-    - For each group of slices you would like to track, put them into a list, which should be inserted into a `SliceGroup` object inside `DOL_SLICE_GROUPS`.
-    - Progress for groups in `DOL_SLICE_GROUPS` will be shown separately, underneath the general code/data progress.
+    - To work around this, you can:
+      - Link the assembly portion before the decompiled source
+      - Name the object files differently (i.e. `file.s.o` vs. `file.c.o`)
+## Usage
+```
+usage: calcprogress.py [-h] (--dol DOL | --rel REL) --map MAP [--asm-root [ASM_ROOT]] [--asm-src-ext [ASM_SRC_EXT]] [--asm-obj-ext [ASM_OBJ_EXT]]
+                       [--obj-files-mk [OBJ_FILES_MK]] [--old-map [OLD_MAP]]
+
+optional arguments:
+  --asm-root [ASM_ROOT]
+                        Path to asm (default: "asm/")
+  --asm-src-ext [ASM_SRC_EXT]
+                        Custom assembly source file extension (default: ".s")
+  --asm-obj-ext [ASM_OBJ_EXT]
+                        Custom assembly object file extension (default: ".o")
+  --obj-files-mk [OBJ_FILES_MK]
+                        Path to obj_files.mk (default: "/obj_files.mk")
+  --old-map [OLD_MAP]
+                        Whether to use the old map format (default: False)
+
+required arguments:
+  --dol DOL             Path to DOL
+  --rel REL             Path to REL
+  --map MAP             Path to symbol map
+```
+- **Use the `--asm-src-ext`/`--asm-obj-ext` arguments if your project does not use `.s` and `.o` respectively.**
+  
+## Customization
+
+- Custom library/range progress tracking
+    - Create `Slice` objects for areas of the DOL you would like to specifically track progress, such as libraries.
+    - For each group of slices you would like to track, put them into a list, which should be inserted into `EXEC_SLICE_GROUPS` through `SliceGroup` objects.
+    - Progress for slice groups in `EXEC_SLICE_GROUPS` will be shown separately, underneath the general code/data progress.
     - Example:
         ```py
         NW4R_SLICES = [
@@ -22,21 +43,21 @@
             NW4R_RODATA = Slice(0x80375780, 0x80378c18)
         ]
 
-        DOL_SLICE_GROUPS = [
+        EXEC_SLICE_GROUPS = [
             # (Group name, Slice list)
             SliceGroup("NW4R", NW4R_SLICES)
         ]
         ```
         ```
-        ./main.py
-
         Code sections: 134324 / 3473024 bytes in src (3.867638%)
         Data sections: 142162 / 1518492 bytes in src (9.362051%)
         Slices:
             NW4R: 104628 / 508360 bytes in src (20.581478%)
         ```
-3. Run `main.py` to print out the project progress.
-   - If you would like to add extra behavior when printing the progress for your project, see `calc_generic_progress` and `calc_slice_progress` in `progress.py`
+- Custom progress display
+   - In `calcprogress.py`, configure the following functions for your project:
+     - `exec_progress_callback`: Any custom main exectuable (DOL/REL) progress display
+     - `slice_group_progress_callback`: Any custom slice group progress display
 ## Design
  - Rather than calculating the size of decompiled source files, this script opts to get the size of the non-decompiled, assembly files:
 1. Base DOL is read to get the total code/data size
