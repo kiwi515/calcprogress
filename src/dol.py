@@ -23,9 +23,6 @@ class Section:
 
 @dataclass
 class Dol():
-    """Wii/GC executable
-    """
-
     class SectionType(IntEnum):
         """Possible types of DOL sections
         """

@@ -35,8 +35,8 @@ class SliceGroup:
         return False
 
 
-def calc_exec_progress(dol: Dol, asm_list: list[AsmUtil.Section], callback: "function"):
-    """Calculate decompilation progress of the specified DOL.
+def calc_module_progress(module: Module, asm_list: list[AsmUtil.Section], callback: "function"):
+    """Calculate decompilation progress of the specified module (DOL/REL).
     User callback specified for any game-specific progress info.
     """
     asm_code = 0
@@ -51,9 +51,9 @@ def calc_exec_progress(dol: Dol, asm_list: list[AsmUtil.Section], callback: "fun
         else:
             assert False, f"Invalid section type ({section.type})!"
 
-    # Dol sizes
-    total_code = dol.code_size()
-    total_data = dol.data_size()
+    # Binary sizes
+    total_code = module.code_size()
+    total_data = module.data_size()
     # Decompiled sizes
     src_code = total_code - asm_code
     src_data = total_data - asm_data
